@@ -34,7 +34,7 @@ jobs:
       contents: write
       issues: write
       pull-requests: write
-      # npm trusted publishing (OIDC)
+      # npm trusted publishing (OIDC): no npm token, and npm adds provenance
       id-token: write
     steps:
       - uses: actions/checkout@v7
@@ -51,4 +51,3 @@ jobs:
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

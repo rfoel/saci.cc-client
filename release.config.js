@@ -4,8 +4,7 @@ export default {
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     "@semantic-release/changelog",
-    // Publishes to npm with trusted publishing (OIDC) when it's set up on npmjs.com,
-    // otherwise with the NPM_TOKEN secret
+    // Publishes with npm trusted publishing (OIDC), set up for .github/workflows/release.yml
     "@semantic-release/npm",
     [
       "@semantic-release/git",
