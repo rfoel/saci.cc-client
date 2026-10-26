@@ -1,0 +1,36 @@
+{
+  "name": "saci.cc",
+  "version": "0.0.0-development",
+  "description": "Temporary email inboxes for end-to-end tests: wait for verification codes and links from saci.cc",
+  "keywords": ["temporary email", "disposable email", "email testing", "e2e", "playwright", "cypress", "otp", "verification code"],
+  "homepage": "https://saci.cc/en/docs/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rfoel/saci.cc-client.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^7.0.0",
+    "@semantic-release/git": "^11.0.1",
+    "semantic-release": "^25.0.9",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
