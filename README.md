@@ -2,10 +2,16 @@
 
 Temporary email inboxes for end-to-end tests. Create an address on [saci.cc](https://saci.cc), use it to sign up in your app, and wait for the verification code or confirmation link.
 
-Free, no account, no API key. No dependencies; works in Node 18+, Bun, Deno and browsers.
+Free. No dependencies; works in Node 18+, Bun, Deno and browsers.
 
 ```bash
 npm install --save-dev saci.cc
+```
+
+The API needs a key: sign in with GitHub at [saci.cc/en/account](https://saci.cc/en/account/), create one, and put it in the `SACI_API_KEY` environment variable (in CI, as a secret). The client reads it from there.
+
+```bash
+export SACI_API_KEY=saci_...
 ```
 
 ```ts
@@ -142,13 +148,14 @@ An email looks like this:
 - `inbox.get(messageId)`: one email in full.
 - `inbox.delete(messageId)` and `inbox.clear()`: delete one email or all of them.
 - `new Saci().inbox(address)`: an `Inbox` for an address created earlier.
+- `new Saci({ apiKey })`: pass the key instead of using `SACI_API_KEY`.
 - `new Saci({ baseUrl, fetch })`: point at another deployment or pass your own `fetch`.
 
-Failed requests throw `SaciError`, which has the HTTP `status`.
+Failed requests throw `SaciError`, which has the HTTP `status`. A missing or revoked key gives a 401.
 
 ## Limits
 
-- 120 requests per minute per IP. The client waits and retries when it gets a 429.
+- 120 requests per minute per API key's account. The client waits and retries when it gets a 429.
 - Emails are deleted about a day after they arrive.
 - There are no passwords: anyone who knows an address can read its inbox. Don't use it for anything sensitive.
 - Addresses only receive email.

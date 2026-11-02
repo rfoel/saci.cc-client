@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Saci, SaciError, SaciTimeoutError, type Email } from "./index";
 
 const ADDRESS = "a1b2c3d4e5f60718@saci.cc";
@@ -20,13 +20,13 @@ function email(id: string, fields: Partial<Email> = {}): Email {
 
 // A fake API. Each list request returns the next batch from `arrivals` (or the last one),
 // as if those emails had arrived while the request was waiting.
-function fakeApi(arrivals: Email[][], responses: Response[] = []) {
-  const requests: { method: string; url: URL }[] = [];
+function fakeApi(arrivals: Email[][], responses: Response[] = [], apiKey?: string) {
+  const requests: { method: string; url: URL; authorization: string | null }[] = [];
   let listCalls = 0;
   const fetch = async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(String(input));
     const method = init?.method ?? "GET";
-    requests.push({ method, url });
+    requests.push({ method, url, authorization: new Headers(init?.headers).get("authorization") });
     const queued = responses.shift();
     if (queued) return queued;
 
@@ -44,7 +44,10 @@ function fakeApi(arrivals: Email[][], responses: Response[] = []) {
     listCalls++;
     return Response.json({ emails: inbox.map(({ messageId, from, subject, receivedAt }) => ({ messageId, from, subject, receivedAt })) });
   };
-  return { saci: new Saci({ baseUrl: "https://saci.cc/api", fetch: fetch as typeof globalThis.fetch }), requests };
+  return {
+    saci: new Saci({ baseUrl: "https://saci.cc/api", fetch: fetch as typeof globalThis.fetch, apiKey }),
+    requests,
+  };
 }
 
 describe("createInbox", () => {
@@ -118,6 +121,27 @@ describe("waitForLink", () => {
     const inbox = saci.inbox(ADDRESS);
     expect(await inbox.waitForLink({ match: "/confirm" })).toBe("https://app.com/confirm?token=abc");
     expect(await inbox.waitForLink()).toBe("https://app.com/logo.png");
+  });
+});
+
+describe("API key", () => {
+  it("sends the key it was given", async () => {
+    const { saci, requests } = fakeApi([[]], [], "saci_given");
+    await saci.createInbox();
+    expect(requests[0].authorization).toBe("Bearer saci_given");
+  });
+
+  it("falls back to SACI_API_KEY, read on each request", async () => {
+    const { saci, requests } = fakeApi([[]]);
+    try {
+      vi.stubEnv("SACI_API_KEY", undefined);
+      await saci.createInbox();
+      vi.stubEnv("SACI_API_KEY", "saci_from_env");
+      await saci.createInbox();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+    expect(requests.map((r) => r.authorization)).toEqual([null, "Bearer saci_from_env"]);
   });
 });
 

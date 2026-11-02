@@ -36,10 +36,16 @@ export interface Email extends EmailSummary {
 }
 
 export interface SaciOptions {
+  /** Your API key (saci_...), from https://saci.cc/en/account/. Defaults to the SACI_API_KEY environment variable. */
+  apiKey?: string;
   /** Defaults to https://saci.cc/api */
   baseUrl?: string;
   fetch?: typeof fetch;
 }
+
+// Read on every request, so it can be set after this module is imported
+const envApiKey = () =>
+  (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.SACI_API_KEY;
 
 export interface WaitOptions {
   /** Only emails whose sender contains this text (case-insensitive) or matches this pattern */
@@ -85,8 +91,10 @@ const timeOf = (date: string | undefined) => (date ? Date.parse(date) : NaN);
 export class Saci {
   readonly baseUrl: string;
   private readonly fetch: typeof fetch;
+  private readonly apiKey: string | undefined;
 
   constructor(options: SaciOptions = {}) {
+    this.apiKey = options.apiKey;
     this.baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/$/, "");
     this.fetch = options.fetch ?? ((...args) => globalThis.fetch(...args));
   }
@@ -106,8 +114,12 @@ export class Saci {
   /** @internal */
   async request<T>(method: "GET" | "POST" | "DELETE", path: string): Promise<T> {
     for (let attempt = 0; ; attempt++) {
-      const res = await this.fetch(this.baseUrl + path, { method });
-      // Over the per-IP rate limit: wait as long as the API asks, then try again
+      const apiKey = this.apiKey ?? envApiKey();
+      const res = await this.fetch(this.baseUrl + path, {
+        method,
+        headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : undefined,
+      });
+      // Over the rate limit: wait as long as the API asks, then try again
       if (res.status === 429 && attempt < MAX_RATE_LIMIT_RETRIES) {
         const retryAfter = Number(res.headers.get("retry-after") ?? NaN);
         await sleep((Number.isFinite(retryAfter) ? retryAfter : 5) * 1000);
