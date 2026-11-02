@@ -1,8 +1,17 @@
 {
   "name": "saci.cc",
-  "version": "0.0.0-development",
+  "version": "1.1.0",
   "description": "Temporary email inboxes for end-to-end tests: wait for verification codes and links from saci.cc",
-  "keywords": ["temporary email", "disposable email", "email testing", "e2e", "playwright", "cypress", "otp", "verification code"],
+  "keywords": [
+    "temporary email",
+    "disposable email",
+    "email testing",
+    "e2e",
+    "playwright",
+    "cypress",
+    "otp",
+    "verification code"
+  ],
   "homepage": "https://saci.cc/en/docs/",
   "repository": {
     "type": "git",
@@ -16,7 +25,9 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=18"
   },
