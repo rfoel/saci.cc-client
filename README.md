@@ -111,7 +111,7 @@ it("signs up with a verification code", () => {
 
 ### `createInbox(options?)`
 
-Creates an inbox and returns an `Inbox`. Without `name` the address is random (16 hex characters), so nobody else can guess it. With `name: "signup-test"` you get `signup-test@saci.cc`, which anyone can read.
+Creates an inbox and returns an `Inbox`. Without `name` the address is random (16 hex characters). With `name: "signup-test"` you get `signup-test@saci.cc`. Either way the inbox belongs to your API key's account for 7 days: only that account can read it, and nobody else can create the same name (a `SaciError` with status 409).
 
 ### `inbox.waitForCode(options?)`, `inbox.waitForLink(options?)`, `inbox.waitForEmail(options?)`
 
@@ -157,7 +157,8 @@ Failed requests throw `SaciError`, which has the HTTP `status`. A missing or rev
 
 - 120 requests per minute per API key's account. The client waits and retries when it gets a 429.
 - Emails are deleted about a day after they arrive.
-- There are no passwords: anyone who knows an address can read its inbox. Don't use it for anything sensitive.
+- Inboxes created with your key are private to your account for 7 days. Still, it's a service for tests and sign-ups: don't use it for anything sensitive.
+- Want to be told instead of waiting? Set a webhook on [saci.cc/en/account](https://saci.cc/en/account/) and each email is POSTed to your URL ([format](https://saci.cc/en/docs/#webhooks)).
 - Addresses only receive email.
 
 The full HTTP API is documented at [saci.cc/en/docs](https://saci.cc/en/docs/). There's also an [MCP server](https://saci.cc/en/mcp/) for AI agents.
